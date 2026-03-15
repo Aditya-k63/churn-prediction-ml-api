@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: churn-app
+    ports:
+      - "8000:8000"   # FastAPI
+      - "8501:8501"   # Streamlit
+    volumes:
+      - .:/app        # live reload during development
+    restart: always
