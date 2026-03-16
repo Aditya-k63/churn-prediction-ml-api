@@ -11,9 +11,9 @@ if "token" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = None
 
-# ── Login Page ────────────────────────────────────────────
+# ── Login Page 
 def show_login():
-    st.title("🔐 Customer Churn Prediction System")
+    st.title(" Customer Churn Prediction System")
     st.subheader("Please login to continue")
 
     with st.form("login_form"):
@@ -34,18 +34,18 @@ def show_login():
                 st.success("Login successful!")
                 st.rerun()
             else:
-                st.error("❌ Invalid username or password")
+                st.error(" Invalid username or password")
         except Exception as e:
             st.error(f"Connection error: {e}")
 
-# ── Prediction Page ───────────────────────────────────────
+# ── Prediction Page ─
 def show_prediction():
-    st.title("📊 Customer Churn Prediction System")
+    st.title("Customer Churn Prediction System")
 
     # Top right logout
     col1, col2 = st.columns([8, 1])
     with col1:
-        st.markdown(f"👤 Logged in as **{st.session_state.username}**")
+        st.markdown(f" Logged in as **{st.session_state.username}**")
     with col2:
         if st.button("Logout"):
             st.session_state.token = None
@@ -90,7 +90,7 @@ def show_prediction():
 
         submitted = st.form_submit_button("🔍 Predict Churn")
 
-    # ── Prediction Call ───────────────────────────────────
+    # ── Prediction Call ─
     if submitted:
         payload = {
             "gender": gender,
@@ -126,17 +126,17 @@ def show_prediction():
                 prob = result["churn_probability"]
                 prediction = result["prediction"]
 
-                st.subheader("🔍 Prediction Result")
+                st.subheader(" Prediction Result")
 
                 if prediction == "Churn":
-                    st.error(f"⚠️ High Risk of Churn ({prob:.2%})")
+                    st.error(f"High Risk of Churn ({prob:.2%})")
                 else:
-                    st.success(f"✅ Low Risk of Churn ({prob:.2%})")
+                    st.success(f"Low Risk of Churn ({prob:.2%})")
 
                 st.progress(float(prob))
 
             elif response.status_code == 401:
-                st.error("⛔ Session expired. Please login again.")
+                st.error(" Session expired. Please login again.")
                 st.session_state.token = None
                 st.rerun()
             else:
@@ -146,7 +146,7 @@ def show_prediction():
             st.error(f"Connection error: {e}")
 
 
-# ── Router ────────────────────────────────────────────────
+# ── Router 
 if st.session_state.token is None:
     show_login()
 else:

@@ -4,21 +4,17 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-# ── Config ────────────────────────────────────────────────
 SECRET_KEY = "churn-super-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# ── Password hashing ──────────────────────────────────────
+# ── Password hashing 
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
-# ── OAuth2 scheme (reads Bearer token from Authorization header) ──
+# ── OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# ── Fake user database (replace with real DB later) ───────
-# Passwords are hashed - plain text versions:
-# aditya   → password123  (admin)
-# viewer   → viewer123    (viewer)
+# ── Fake user database (replace with real DB later)
 USERS_DB = {
     "aditya": {
         "username": "aditya",
@@ -32,7 +28,7 @@ USERS_DB = {
     }
 }
 
-# ── Helper functions ──────────────────────────────────────
+# ── Helper functions
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
