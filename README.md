@@ -1,139 +1,166 @@
-# Customer Churn Prediction System
+# Customer Churn Prediction API
 
-An end-to-end machine learning system that predicts customer churn using a Logistic Regression model, deployed via FastAPI and integrated with a Streamlit frontend.
+An end-to-end machine learning system that predicts customer churn probability using a Logistic Regression model — deployed via **FastAPI**, with an interactive **Streamlit** frontend for real-time predictions.
 
----
-
-## Project Overview
-
-This project builds a complete ML pipeline for customer churn prediction:
-
-- Data preprocessing using scikit-learn Pipeline
-- Feature encoding and scaling
-- Model training and evaluation
-- ROC-AUC analysis and threshold optimization
-- FastAPI deployment
-- Streamlit frontend integration
-
-The system allows users to input customer details and receive churn probability and classification in real-time.
-
----
+> **Docker Hub:** `docker pull adsharma14/churn-prediction-api`
 
 ## Model Performance
 
-- Model: Logistic Regression
-- ROC-AUC: ~0.83
-- Threshold optimized using F1-score
-- Handles class imbalance via threshold tuning
+| Metric    | Value  |
+|-----------|--------|
+| Model     | Logistic Regression |
+| ROC-AUC   | ~0.83  |
+| Threshold | Optimised via F1-score (not default 0.5) |
+| Imbalance | Handled via threshold tuning |
 
 ---
 
 ## Architecture
 
-Streamlit Frontend  
-↓  
-FastAPI Backend  
-↓  
-Scikit-learn Pipeline (Preprocessing + Model)  
-↓  
-Churn Prediction  
+```
+Streamlit Frontend  (port 8501)
+        ↓
+FastAPI Backend     (port 8000)
+        ↓
+scikit-learn Pipeline
+  └── Preprocessing (encoding + scaling)
+  └── Logistic Regression model
+        ↓
+Churn Probability + Label
+```
 
 ---
 
 ## Project Structure
+
+```
 churn-prediction-ml-api/
-│
 ├── app/
-│ └── main.py # FastAPI backend
-│
+│   └── main.py              # FastAPI backend
 ├── model/
-│ └── churn_model.pkl # Trained model artifact
-│
+│   └── churn_model.pkl      # Trained model artifact
 ├── Frontend/
-│ └── streamlit_app.py # Streamlit UI
-│
+│   └── streamlit_app.py     # Streamlit UI
 ├── requirements.txt
 └── README.md
-
+```
 
 ---
 
-## Running the Project Locally
+## Quick Start
 
-### 1. Clone the Repository
+### Option 1 — Docker (recommended)
 
+```bash
+# Pull and run the API
+docker pull adsharma14/churn-prediction-api
+docker run -p 8000:8000 adsharma14/churn-prediction-api
+```
 
-git clone <your-repo-url>
+API docs live at: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Option 2 — Run locally
+
+**1. Clone the repo**
+```bash
+git clone https://github.com/adsharma14/churn-prediction-ml-api
 cd churn-prediction-ml-api
+```
 
-
-### 2. Install Dependencies
-
-
+**2. Install dependencies**
+```bash
 pip install -r requirements.txt
+```
 
-
-### 3. Start FastAPI Backend
-
-
+**3. Start the FastAPI backend**
+```bash
 uvicorn app.main:app --reload
+```
 
-
-API documentation:
-
-http://127.0.0.1:8000/docs
-
-
-Health check:
-
-http://127.0.0.1:8000/health
-
-
-### 4. Start Streamlit Frontend
-
-In a new terminal:
-
-
+**4. Start the Streamlit frontend** _(new terminal)_
+```bash
 streamlit run Frontend/streamlit_app.py
+```
 
+| Service       | URL                                      |
+|---------------|------------------------------------------|
+| Streamlit UI  | http://localhost:8501                    |
+| API docs      | http://localhost:8000/docs               |
+| Health check  | http://localhost:8000/health             |
 
 ---
 
-## API Endpoint
+## API Reference
 
-### POST /predict
+### `POST /predict`
 
-Accepts customer information and returns:
+Accepts customer information and returns churn probability and classification.
 
-
+**Request body:**
+```json
 {
-"churn_probability": float,
-"threshold": float,
-"prediction": "Churn" | "Stay"
+  "tenure": 12,
+  "MonthlyCharges": 65.5,
+  "TotalCharges": 786.0,
+  "Contract": "Month-to-month",
+  "PaymentMethod": "Electronic check",
+  "InternetService": "Fiber optic"
 }
+```
 
+**Response:**
+```json
+{
+  "churn_probability": 0.74,
+  "threshold": 0.42,
+  "prediction": "Churn"
+}
+```
+
+### `GET /health`
+Returns API status.
+
+```json
+{ "status": "ok" }
+```
 
 ---
 
-## Key Learnings
+## Key Technical Decisions
 
-- Importance of consistent scikit-learn versioning in model deployment
-- Threshold tuning vs default 0.5 classification
-- Proper schema validation with Pydantic
-- Model sanity checking via controlled feature perturbation
-- Building full-stack ML systems beyond notebooks
+- **Threshold tuning** — Default 0.5 threshold replaced with F1-optimised threshold (~0.42) to better handle class imbalance. This catches more true churners at the cost of slightly more false positives — the right tradeoff for retention use cases.
+- **sklearn Pipeline** — Preprocessing (encoding + scaling) bundled inside the same `.pkl` as the model. Ensures identical transformations at training and inference time. Eliminates the most common deployment bug.
+- **Pydantic validation** — All inputs validated before reaching the model. Returns clear 422 errors on bad input rather than silent failures.
+- **Model sanity checking** — Verified model direction by perturbing key features (e.g. increasing tenure should decrease churn probability).
 
 ---
 
 ## Future Improvements
 
-- Docker containerization
-- Cloud deployment
-- Model explainability (SHAP integration)
-- CI/CD pipeline
+- [ ] Docker Compose with MySQL prediction logging
+- [ ] MLflow experiment tracking (LR vs RF vs XGBoost comparison)
+- [ ] SHAP explainability — feature contribution per prediction
+- [ ] CI/CD with GitHub Actions
+- [ ] Cloud deployment (Railway / Render / AWS EC2)
+
+---
+
+## Dataset
+
+**IBM Telco Customer Churn Dataset** — 7,043 customers, 20 features including contract type, tenure, monthly charges, internet service type, and payment method.
+
+Source: [Kaggle — Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
 
 ---
 
 ## Author
 
-Aditya Kumar
+**Aditya Kumar**
+- GitHub: [@adsharma14](https://github.com/adsharma14)
+- Docker Hub: [adsharma14](https://hub.docker.com/u/adsharma14)
+
+---
+
+## License
+
+MIT License — free to use and modify.
