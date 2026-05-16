@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pandas
 numpy
 scikit-learn==1.6.1
@@ -9,3 +9,8 @@ bcrypt==4.0.1
 python-multipart
 streamlit
 requests
+python-dotenv
+joblib
+matplotlib
+pytest
+httpx

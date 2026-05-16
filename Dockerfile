@@ -12,13 +12,13 @@ COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copy entire project
+# Copy project files
 COPY . .
 
-# Fix line endings on start.sh (in case saved on Windows)
-RUN sed -i 's/\r//' start.sh && chmod +x start.sh
+# Fix Windows line endings and make start script executable
+RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
-# Expose both ports
+# Expose API and Streamlit ports
 EXPOSE 8000
 EXPOSE 8501
 
