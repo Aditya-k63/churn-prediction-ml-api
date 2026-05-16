@@ -1,118 +1,123 @@
 # Customer Churn Prediction API
 
----
-## What it does
+A production-ready machine learning application that predicts customer churn using the IBM Telco Customer Churn dataset.
 
-You enter a customer's details — tenure, monthly charges, contract type, etc. — and the system tells you the probability they'll churn, along with a classification (Churn / Stay). The threshold for that classification isn't the default 0.5 — I tuned it using F1-score to ~0.42, which makes more sense for a retention use case where missing a churner is more costly than a false alarm.
+The project includes:
 
----
-
-## Model performance
-
-| Metric | Value |
-|---|---|
-| Algorithm | Logistic Regression |
-| Dataset | IBM Telco Customer Churn (7,043 rows) |
-| ROC-AUC | ~0.83 |
-| Decision threshold | ~0.42 (F1-optimised) |
-
-I also verified the model makes sense — increasing tenure lowers churn probability, increasing monthly charges raises it. Basic sanity check but important before trusting any predictions.
+* Scikit-learn training pipeline
+* FastAPI REST API
+* JWT authentication and role-based access
+* Streamlit frontend
+* Automated testing with Pytest
+* Docker and Docker Compose
+* GitHub Actions CI/CD
+* Automatic Docker Hub image publishing
+* Cloud deployment on Render
 
 ---
 
-## Architecture
+## Live Demo
 
-```
-Streamlit Frontend      (port 8501)
+* **API Health Check:** https://churn-prediction-api-2ftp.onrender.com/health
+* **Swagger API Docs:** https://churn-prediction-api-2ftp.onrender.com/docs
+* **Docker Hub:** https://hub.docker.com/r/adsharma14/churn-prediction-api
+* **GitHub Repository:** https://github.com/Aditya-k63/churn-prediction-ml-api
+
+---
+
+## What It Does
+
+Given a customer's account information (tenure, charges, contract type, internet service, payment method, and more), the model predicts:
+
+* Probability of churn
+* Tuned decision threshold
+* Final classification (`Churn` or `Stay`)
+
+Instead of using the default threshold of `0.50`, the model uses an F1-optimized threshold of approximately `0.42`, which improves recall for customers likely to churn.
+
+---
+
+## Model Performance
+
+| Metric             | Value                    |
+| ------------------ | ------------------------ |
+| Algorithm          | Logistic Regression      |
+| Dataset            | IBM Telco Customer Churn |
+| Rows               | 7,043                    |
+| Features           | 20                       |
+| ROC-AUC            | ~0.83                    |
+| Decision Threshold | ~0.42 (F1 Optimized)     |
+
+---
+
+## System Architecture
+
+```text
+Streamlit Frontend
         │
         ▼
-FastAPI Backend         (port 8000)
+FastAPI Backend
   ├── JWT Authentication
-  └── POST /predict
+  ├── Role-Based Access Control
+  └── /predict Endpoint
         │
         ▼
-scikit-learn Pipeline
-  ├── Encoding + StandardScaler
+Scikit-learn Pipeline
+  ├── Missing Value Imputation
+  ├── One-Hot Encoding
+  ├── StandardScaler
   └── Logistic Regression
         │
         ▼
-  Churn probability + label
+Churn Probability + Business Classification
 ```
 
 ---
 
-## Project structure
+## Project Structure
 
-```
+```text
 churn-prediction-ml-api/
+├── .github/workflows/ci-cd.yml
 ├── app/
-│   ├── main.py              # FastAPI routes and prediction logic
-│   └── auth.py              # JWT auth — admin-protected endpoints
+│   ├── main.py
+│   ├── auth.py
+│   ├── schemas.py
+│   └── utils.py
 ├── Frontend/
-│   └── streamlit_app.py     # Streamlit UI
+│   └── streamlit_app.py
 ├── model/
-│   └── churn_model.pkl      # Trained pipeline artifact
-├── training/                # Training scripts
+│   └── churn_model.pkl
+├── training/
+│   └── train.py
+├── tests/
+│   ├── conftest.py
+│   └── test_api.py
+├── .env.example
+├── .dockerignore
 ├── docker-compose.yml
 ├── Dockerfile
 ├── start.sh
 ├── requirements.txt
+├── LICENSE
 └── README.md
 ```
 
 ---
 
-## Running it locally
+## API Endpoints
 
-```bash
-# Clone the repo
-git clone https://github.com/adsharma14/churn-prediction-ml-api
-cd churn-prediction-ml-api
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start the API
-uvicorn app.main:app --reload
-
-# In a new terminal — start the frontend
-streamlit run Frontend/streamlit_app.py
-```
-
-| Service | URL |
-|---|---|
-| Streamlit UI | http://localhost:8501 |
-| Swagger docs | http://localhost:8000/docs |
-| Health check | http://localhost:8000/health |
+| Method | Endpoint      | Description                       |
+| ------ | ------------- | --------------------------------- |
+| GET    | `/health`     | Service health check              |
+| POST   | `/login`      | Obtain JWT access token           |
+| POST   | `/predict`    | Predict churn probability         |
+| GET    | `/admin/info` | Admin-only endpoint               |
+| GET    | `/docs`       | Interactive Swagger documentation |
 
 ---
 
-## Or with Docker
-
-```bash
-docker-compose up --build
-```
-
-Same result, no manual setup needed.
-
----
-
-## API
-
-### `POST /predict`
-
-```json
-{
-  "tenure": 12,
-  "MonthlyCharges": 65.5,
-  "TotalCharges": 786.0,
-  "Contract": "Month-to-month",
-  "PaymentMethod": "Electronic check",
-  "InternetService": "Fiber optic"
-}
-```
-
-Response:
+## Example Prediction Response
 
 ```json
 {
@@ -122,43 +127,103 @@ Response:
 }
 ```
 
-### `GET /health`
+---
 
-```json
-{ "status": "ok" }
+## Authentication
+
+### Demo Credentials
+
+**Admin**
+
+* Username: `aditya`
+* Password: `password123`
+
+**Viewer**
+
+* Username: `viewer`
+* Password: `viewer123`
+
+---
+
+## Run Locally
+
+```bash
+git clone https://github.com/Aditya-k63/churn-prediction-ml-api.git
+cd churn-prediction-ml-api
+
+python -m venv myenv
+myenv\Scripts\activate   # Windows
+
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
 
-Full interactive docs available at `/docs` once the app is running.
+In a second terminal:
+
+```bash
+streamlit run Frontend/streamlit_app.py
+```
 
 ---
 
-## A few things I learned building this
+## Run with Docker
 
-The versioning issue caught me off guard — the sklearn version used to train the model has to match the one running the API, otherwise the `.pkl` won't load. Obvious in hindsight but took me a while to debug.
-
-Bundling preprocessing inside the Pipeline was the right call. I tried it the other way first (separate scaler, loaded separately in the API) and it's a mess to maintain. Having everything in one artifact means training and inference are always consistent.
-
-Threshold tuning mattered more than I expected. The default 0.5 was missing a lot of real churners. Optimising for F1 dropped the threshold to ~0.42 and recall improved significantly without hurting precision too much.
+```bash
+docker compose up --build
+```
 
 ---
 
-## What I want to add next
+## CI/CD Pipeline
 
-- MySQL logging — store every prediction with input features, probability, and timestamp
-- MLflow — properly compare Logistic Regression vs Random Forest vs XGBoost instead of just going with LR
-- SHAP — so predictions come with an explanation, not just a number
-- GitHub Actions for CI/CD
-- Deploy it somewhere publicly accessible
+The GitHub Actions workflow automatically:
+
+1. Installs dependencies
+2. Creates a temporary `.env`
+3. Runs automated tests
+4. Builds the Docker image
+5. Pushes the image to Docker Hub
+
+Every push to the `main` branch triggers the pipeline.
+
+---
+
+## Deployment
+
+The application is deployed to Render using the Docker image published to Docker Hub.
+
+---
+
+## Key Engineering Lessons
+
+* Packaging preprocessing inside a single Scikit-learn `Pipeline` ensures consistent training and inference.
+* Matching Scikit-learn versions is critical when loading serialized models.
+* Threshold tuning significantly improved churn recall compared to the default `0.50`.
+* CI/CD automation eliminates manual build and deployment steps.
+* Environment variables are essential for secure secret management.
+
+---
+
+## Future Improvements
+
+* MySQL logging for prediction history
+* MLflow experiment tracking
+* SHAP-based model explanations
+* Model monitoring and drift detection
+* Multi-model comparison dashboard
 
 ---
 
 ## Dataset
 
-IBM Telco Customer Churn — available on [Kaggle](https://www.kaggle.com/datasets/blastchar/telco-customer-churn). 7,043 customers, 20 features.
+IBM Telco Customer Churn dataset from Kaggle:
+https://www.kaggle.com/datasets/blastchar/telco-customer-churn
 
 ---
 
 ## Author
 
 **Aditya Kumar**
-GitHub: [@adsharma14](https://github.com/adsharma14)
+
+* GitHub: https://github.com/adsharma14
+* LinkedIn: *(https://www.linkedin.com/in/aditya-kumar1407/)*
