@@ -1,7 +1,7 @@
 ```yaml
 name: CI/CD Pipeline
 
-'on':
+on:
   push:
     branches:
       - main
@@ -37,13 +37,14 @@ jobs:
           echo "ALGORITHM=HS256" >> .env
           echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> .env
 
-      - name: Run Pytest
+      - name: Run Tests
         run: pytest
 
   docker:
     name: Build and Push Docker Image
-    runs-on: ubuntu-latest
     needs: test
+    runs-on: ubuntu-latest
+
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
